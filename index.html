@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mi AR de Póster</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-aframe.prod.js"></script>
+
+    <style>
+      /* Opcional: Estilos para ocultar el UI de A-Frame si no lo quieres */
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      .ar-button {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999;
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <a-scene
+      mindar-image="imageTargetSrc: ./targets.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+    >
+      <a-assets>
+        <video
+          id="video-poster"
+          src="./gp1.mov"
+          preload="auto"
+          loop="true"
+          autoplay="true"
+          playsinline
+          muted
+        ></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-video
+          src="#video-poster"
+          width="1.6"
+          height="0.9"
+          position="0 0 0"
+          rotation="0 0 0"
+        ></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      // Este script controlará la reproducción del video
+      document.addEventListener('DOMContentLoaded', () => {
+        const scene = document.querySelector('a-scene');
+        const video = document.querySelector('#video-poster');
+
+        scene.addEventListener('targetFound', event => {
+          console.log('Marcador encontrado, reproduciendo video...');
+          if (video.paused) {
+            video.play().catch(e => console.error("Error al intentar reproducir el video:", e));
+          }
+        });
+
+        scene.addEventListener('targetLost', event => {
+          console.log('Marcador perdido, pausando video...');
+          video.pause();
+          video.currentTime = 0; // Opcional: reinicia el video cuando se pierde el marcador
+        });
+      });
+    </script>
+    <a href="#" class="ar-button" onclick="document.querySelector('a-scene')._startAR(); return false;">Iniciar AR</a>
+  </body>
+</html>
