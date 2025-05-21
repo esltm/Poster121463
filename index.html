@@ -3,12 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mi AR de Póster</title>
+    <title>AR con Múltiples Marcadores</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.1/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-      /* Opcional: Estilos para ocultar el UI de A-Frame si no lo quieres */
       body {
         margin: 0;
         overflow: hidden;
@@ -30,7 +29,7 @@
   </head>
   <body>
     <a-scene
-      mindar-image="imageTargetSrc: ./targets.mind;"
+      mindar-image="imageTargetSrc: ./targetsSR.mind;"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
@@ -38,8 +37,18 @@
     >
       <a-assets>
         <video
-          id="video-poster"
-          src="./gp1.mov"
+          id="video-marcador1"
+          src="./sresolution.mov"
+          preload="auto"
+          loop="true"
+          autoplay="true"
+          playsinline
+          muted
+        ></video>
+
+        <video
+          id="video-marcador2"
+          src="./Transmitance.mp4"
           preload="auto"
           loop="true"
           autoplay="true"
@@ -52,7 +61,17 @@
 
       <a-entity mindar-image-target="targetIndex: 0">
         <a-video
-          src="#video-poster"
+          src="#video-marcador1"
+          width="1.6"
+          height="0.9"
+          position="0 0 0"
+          rotation="0 0 0"
+        ></a-video>
+      </a-entity>
+
+      <a-entity mindar-image-target="targetIndex: 1">
+        <a-video
+          src="#video-marcador2"
           width="1.6"
           height="0.9"
           position="0 0 0"
@@ -62,25 +81,51 @@
     </a-scene>
 
     <script>
-      // Este script controlará la reproducción del video
       document.addEventListener('DOMContentLoaded', () => {
         const scene = document.querySelector('a-scene');
-        const video = document.querySelector('#video-poster');
 
-        scene.addEventListener('targetFound', event => {
-          console.log('Marcador encontrado, reproduciendo video...');
-          if (video.paused) {
-            video.play().catch(e => console.error("Error al intentar reproducir el video:", e));
+        // Referencias a los videos
+        const video1 = document.querySelector('#video-marcador1');
+        const video2 = document.querySelector('#video-marcador2');
+
+        // Referencias a las entidades de marcador
+        const marker1Entity = document.querySelector('a-entity[mindar-image-target="targetIndex: 0"]');
+        const marker2Entity = document.querySelector('a-entity[mindar-image-target="targetIndex: 1"]');
+
+        // Listener para el Marcador 1
+        marker1Entity.addEventListener('targetFound', event => {
+          console.log('Marcador 1 encontrado, reproduciendo video 1...');
+          if (video1.paused) {
+            video1.play().catch(e => console.error("Error al reproducir video 1:", e));
           }
         });
 
-        scene.addEventListener('targetLost', event => {
-          console.log('Marcador perdido, pausando video...');
-          video.pause();
-          video.currentTime = 0; // Opcional: reinicia el video cuando se pierde el marcador
+        marker1Entity.addEventListener('targetLost', event => {
+          console.log('Marcador 1 perdido, pausando video 1...');
+          video1.pause();
+          video1.currentTime = 0; // Reinicia el video
+        });
+
+        // Listener para el Marcador 2
+        marker2Entity.addEventListener('targetFound', event => {
+          console.log('Marcador 2 encontrado, reproduciendo video 2...');
+          if (video2.paused) {
+            video2.play().catch(e => console.error("Error al reproducir video 2:", e));
+          }
+        });
+
+        marker2Entity.addEventListener('targetLost', event => {
+          console.log('Marcador 2 perdido, pausando video 2...');
+          video2.pause();
+          video2.currentTime = 0; // Reinicia el video
+        });
+
+        // Opcional: Para iniciar la escena AR si es necesario (ver explicación anterior)
+        document.querySelector('.ar-button').addEventListener('click', function() {
+          scene._startAR();
         });
       });
     </script>
-    <a href="#" class="ar-button" onclick="document.querySelector('a-scene')._startAR(); return false;">Iniciar AR</a>
+    <a href="#" class="ar-button">Iniciar AR</a>
   </body>
 </html>
